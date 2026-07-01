@@ -86,16 +86,16 @@ def level4():
 @xss_bp.route('/5', methods=['GET', 'POST'])
 def level5():
     info = level_info(5, '存储型 XSS + CSP 绕过',
-                      '页面开启了 CSP 限制，不允许执行内联脚本和 eval。但仍有办法——注意到 CSP 允许加载同源资源。',
-                      'CSP 策略: default-src \'self\'; 尝试寻找同源可控资源注入点，或在 HTML 标签的事件属性中执行 JS。')
+                      '页面开启了 CSP 限制，内联脚本和事件处理器均被拦截。但 CSP 允许加载同源资源。结合上传功能上传 JS 文件再引用。',
+                      '尝试: 先到 /upload/1 上传一个 .js 文件(内容: alert(document.cookie))，然后在留言中引用: <script src="/upload/uploads/文件名.js"></script>')
     message = ''
 
     if request.method == 'POST':
         name = request.form.get('name', '')
         content = request.form.get('content', '')
-        # 过滤 script 标签但不过滤事件处理器
-        sanitized = re.sub(r'(?i)<script[^>]*>.*?</script>', '', content)
-        sanitized = re.sub(r'(?i)<script[^>]*>', '', sanitized)
+        # 过滤 script 标签但不过滤引用同源脚本
+        sanitized = re.sub(r'(?is)<script[^>]*>.*?</script>', '', content)
+        sanitized = re.sub(r'(?is)<script[^>]*>', '', sanitized)
         conn = get_db()
         conn.execute(
             "INSERT INTO comments (name, content) VALUES (?,?)",
@@ -115,8 +115,8 @@ def level5():
         render_template('xss_stored_csp.html', info=info,
                         comments=comments, message=message)
     )
-    # CSP: 只允许加载同源资源，禁止内联脚本
+    # CSP: 允许同源脚本和内联样式(页面本身需要)
     response.headers['Content-Security-Policy'] = (
-        "default-src 'self'; script-src 'self'"
+        "default-src 'self'; script-src 'self'; style-src 'unsafe-inline'"
     )
     return response

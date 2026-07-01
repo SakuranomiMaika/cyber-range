@@ -16,7 +16,7 @@
 </div>
 {% endif %}
 
-{% if result %}
+{% if result is not none %}
 <div class="card">
     <h3>查询结果</h3>
     {% if result is mapping and result.error %}

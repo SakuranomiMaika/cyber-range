@@ -16,7 +16,7 @@
 </div>
 {% endif %}
 
-{% if result %}
+{% if result is not none %}
 <div class="card">
     <h3>结果</h3>
     {% if result.status == 'ok' %}

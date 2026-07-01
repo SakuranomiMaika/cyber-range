@@ -86,7 +86,9 @@ def level3():
 # ── Lv4: 时间盲注 ────────────────────────────────────────────────────
 @sqli_bp.route('/4', methods=['GET'])
 def level4():
-    info = level_info(4, '时间盲注', '页面不显示任何差异，只能通过响应时间长短来判断注入。注意：sleep 时间设得很短，耐心观察。', '尝试: id=1\' OR IF(1=1, SLEEP(2), 0) --')
+    info = level_info(4, '时间盲注',
+                      '页面不显示任何差异，只能通过响应时间长短来判断注入。（注意：SQLite 没有 SLEEP()，用 randomblob() 产生延时）',
+                      '尝试: id=1 AND (WITH RECURSIVE cte(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM cte WHERE n < 5000000) SELECT count(*) FROM cte) — 延时约1.5秒; 对比普通 id=1（毫秒级）')
     result = None
     query = ''
     uid = request.args.get('id', '')

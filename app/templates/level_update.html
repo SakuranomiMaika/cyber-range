@@ -21,7 +21,7 @@
 </div>
 {% endif %}
 
-{% if result %}
+{% if result is not none %}
 <div class="card">
     {% if result.error %}
         <div class="result-error">{{ result.error }}</div>
